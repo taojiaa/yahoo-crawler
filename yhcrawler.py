@@ -74,6 +74,7 @@ class YahooCrawler:
         Returns:
             str
         """
+        
         link = request.Request(url=url, headers=self.headers)
         resp = request.urlopen(link)
         html = resp.read().decode('utf-8')
