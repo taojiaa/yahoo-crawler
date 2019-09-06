@@ -5,7 +5,6 @@ import numpy as np
 from datetime import datetime
 from urllib import request
 from concurrent import futures
-from bs4 import BeautifulSoup as bs
 from functools import partial
 
 
