@@ -9,6 +9,7 @@ from functools import partial
 
 
 class YahooCrawler:
+
     def __init__(self, workers=20):
         """
         Args:
@@ -34,17 +35,19 @@ class YahooCrawler:
         Returns:
             A dict of pd.DataFrame
         """
-        start_time = int(
-            datetime.timestamp(datetime.strptime(start_time, '%Y-%m-%d')))
-        end_time = int(
-            datetime.timestamp(datetime.strptime(end_time, '%Y-%m-%d')))
-        func = partial(self.__get_data, start_time, end_time,
-                       self.freq_maps[freq])
+        st = datetime.timestamp(datetime.strptime(start_time, '%Y-%m-%d'))
+        ed = datetime.timestamp(datetime.strptime(end_time, '%Y-%m-%d'))
+
+        func = partial(self.__get_data,
+                       start_time=int(st),
+                       end_time=int(ed),
+                       freq=self.freq_maps[freq])
+
         with futures.ThreadPoolExecutor(self.workers) as executor:
             result = executor.map(func, symbols)
         return dict(zip(symbols, result))
 
-    def __get_data(self, start_time, end_time, freq, symbol):
+    def __get_data(self, symbol, start_time, end_time, freq):
         """Get single symbol data.
 
         Args:
@@ -113,8 +116,8 @@ class YahooCrawler:
         p_cols = ['close', 'high', 'low', 'open']
 
         if 'splitratio' in data.columns:
-            data['splitratio'] = data['splitratio'].fillna(
-                1)[::-1].cumprod()[::-1]
+            data['splitratio'] = data['splitratio'].fillna(1)
+            data['splitratio'] = data['splitratio'][::-1].cumprod()[::-1]
             data['volume'] = data['volume'] / data['splitratio']
             data[p_cols] = data[p_cols].multiply(data['splitratio'], axis=0)
             data = data.drop('splitratio', axis=1).dropna(how='all')
