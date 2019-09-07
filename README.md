@@ -32,6 +32,6 @@
 
 - The recommended installation method is [pipenv](https://docs.pipenv.org/en/latest/):
 
-  ~~~sh
-  pipenv install yhcrawler
+  ~~~console
+  $ pipenv install yhcrawler
   ~~~
