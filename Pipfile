@@ -4,10 +4,14 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+flake8 = "*"
+pylint = "*"
+yapf = "*"
 
 [packages]
 pandas = "*"
-bs4 = "*"
+numpy = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"

@@ -1,9 +1,9 @@
 import re
 import pandas as pd
 import numpy as np
+import requests
 
 from datetime import datetime
-from urllib import request
 from concurrent import futures
 from functools import partial
 
@@ -14,7 +14,6 @@ class YahooCrawler:
         Args:
             workers (int, optional): The maximum number of threads that can be used to execute the given calls. Defaults to 20.
         """
-
         self.headers = {
             'User-Agent':
             'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'
@@ -25,17 +24,16 @@ class YahooCrawler:
 
     def read_eod_data(self, symbols, start_time, end_time, freq='daily'):
         """The function for users to read the eod data from Yahoo Finance.
-        
+
         Args:
             symbols (list): Symbols of requested data
             start_time (str): Start date of requested data
             end_time (str): End date of requested data
             freq (str, optional): The frequency of requested data, can be 'daily', 'weekly' or 'monthly'. Defaults to 'daily'.
-        
+
         Returns:
             A dict of pd.DataFrame
         """
-
         start_time = int(
             datetime.timestamp(datetime.strptime(start_time, '%Y-%m-%d')))
         end_time = int(
@@ -48,17 +46,16 @@ class YahooCrawler:
 
     def __get_data(self, start_time, end_time, freq, symbol):
         """Get single symbol data.
-        
+
         Args:
             start_time (str): Start date of requested data
             end_time (str): End date of requested data
             freq (str, optional): The frequency of requested data, can be 'daily', 'weekly' or 'monthly'. Defaults to 'daily'.
             symbols (list): Symbols of requested data
-        
+
         Returns:
             pd.DataFrame
         """
-
         url = self.main_url + f'quote/{symbol}/history?period1={start_time}&period2={end_time}&interval=1{freq}&filter=history&frequency=1{freq}'
         html = self.__fetch_data(url)
         data = self.__parse_data(html)
@@ -66,29 +63,26 @@ class YahooCrawler:
 
     def __fetch_data(self, url):
         """Fetch the html from url
-        
+
         Args:
             url (str)
-        
+
         Returns:
             str
         """
-        
-        link = request.Request(url=url, headers=self.headers)
-        resp = request.urlopen(link)
-        html = resp.read().decode('utf-8')
+        resp = requests.get(url=url, headers=self.headers)
+        html = str(resp.content, encoding='utf-8')
         return html
 
     def __parse_data(self, html):
         """Get the price data from html string.
-        
+
         Args:
             html (str)
-        
+
         Returns:
             pd.DataFrame
         """
-
         data = re.findall('"prices":\[(.+)\],"isPending"', html)
         if data:
             data = re.sub('null', 'np.nan', data[0])
@@ -106,14 +100,13 @@ class YahooCrawler:
 
     def __process_data(self, data):
         """Recalculate the original price without splits and dividends adjusted.
-        
+
         Args:
             data (pd.DataFrame)
 
         Returns:
             pd.DataFrame
         """
-
         data['date'] = data['date'].apply(
             lambda x: datetime.fromtimestamp(x).replace(hour=0, minute=0))
         data = data.set_index('date')
@@ -139,4 +132,5 @@ if __name__ == '__main__':
                             start_time='2016-01-01',
                             end_time='2019-06-30',
                             freq='daily')
-    data['AAPL'].head()
+    print(data['AAPL'].head())
+    print(data['GOOG'].head())
